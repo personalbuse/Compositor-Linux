@@ -1,0 +1,28 @@
+name: compositor
+description: "Compositor - Image Editor for Linux and Windows"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ffi: ^2.1.0
+  path: ^1.9.0
+  file_selector: ^1.0.0
+  image: ^4.2.0
+  uuid: ^4.4.0
+  collection: ^1.18.0
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  test: ^1.25.0
+
+flutter:
+  uses-material-design: true
