@@ -2,13 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:path/path.dart' as path;
-import 'package:uuid/uuid.dart';
 import 'package:image/image.dart' as img;
 import '../../core/model.dart';
 
 class ProjectStore {
-  static const _uuid = Uuid();
-
   static Future<CanvasDocument> readComp(Directory compDir) async {
     final manifestFile = File(path.join(compDir.path, 'manifest.json'));
     if (!await manifestFile.exists()) {
@@ -74,7 +71,6 @@ class ProjectStore {
 
       final imageFile = '${layer.id}.png';
       final imagePath = path.join(imagesDir.path, imageFile);
-      final maskPath = path.join(imagesDir.path, '${layer.id}.mask.png');
 
       final imageFileExists = await File(imagePath).exists();
       if (!imageFileExists) {
@@ -88,24 +84,6 @@ class ProjectStore {
       }
 
       final rgba = _convertToPremultipliedRGBA(decoded);
-
-      final maskFileExists = await File(maskPath).exists();
-      Uint8List? maskBytes;
-      if (maskFileExists && layer.mask?.maskEnabled == true) {
-        final maskBytesRaw = await File(maskPath).readAsBytes();
-        final maskDecoded = img.decodeImage(maskBytesRaw);
-        if (maskDecoded != null) {
-          final gray = img.Image(width: maskDecoded.width, height: maskDecoded.height);
-          for (int y = 0; y < maskDecoded.height; y++) {
-            for (int x = 0; x < maskDecoded.width; x++) {
-              final p = maskDecoded.getPixel(x, y);
-              final lum = (p.r + p.g + p.b) ~/ 3;
-              gray.setPixelRgba(x, y, lum, lum, lum, 255);
-            }
-          }
-          maskBytes = Uint8List.fromList(gray.getBytes());
-        }
-      }
 
       layer.asset = ImportedImage(
         name: imageFile,
@@ -183,10 +161,6 @@ class ProjectStore {
     if (manifest['layers'] == null) {
       throw ProjectStoreException('Missing layers in manifest');
     }
-  }
-
-  static int _estimateRamBytes() {
-    return 8 * 1024 * 1024 * 1024;
   }
 }
 

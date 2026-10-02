@@ -1,8 +1,6 @@
-import 'dart:collection';
 import 'dart:math';
 import 'dart:typed_data';
 import 'surface.dart';
-import '../core/model.dart';
 
 class DownsampleCache {
   final Map<String, _ImagePyramid> _cache = {};

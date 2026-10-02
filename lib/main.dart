@@ -1,122 +1,477 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:compositor/ui/theme/app_theme.dart';
+import 'package:compositor/ui/shell/editor_shell.dart';
+import 'package:compositor/ui/canvas/viewport.dart';
+import 'package:compositor/core/session/editor_session.dart';
+import 'package:compositor/core/model.dart';
+import 'package:compositor/io/comp.dart';
+import 'package:file_selector/file_selector.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const CompositorApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class CompositorApp extends StatelessWidget {
+  const CompositorApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      title: 'Compositor',
+      theme: AppTheme.themeData,
+      darkTheme: AppTheme.themeData,
+      themeMode: ThemeMode.dark,
+      home: const CompositorHome(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class CompositorHome extends StatefulWidget {
+  const CompositorHome({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<CompositorHome> createState() => _CompositorHomeState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _CompositorHomeState extends State<CompositorHome> {
+  final EditorSession _session = EditorSession();
+  Tool _activeTool = Tool.move;
+  CanvasViewport _viewport = CanvasViewport();
+  List<ImageLayer> _selectedLayers = [];
+  double _brushSize = 50.0;
+  double _brushHardness = 0.5;
+  double _brushOpacity = 1.0;
+  Color _brushColor = Colors.black;
+  bool _brushIsEraser = false;
+  bool _isSpacePressed = false;
 
-  void _incrementCounter() {
+  @override
+  void initState() {
+    super.initState();
+    _session.addListener(_onSessionChanged);
+    HardwareKeyboard.instance.addHandler(_handleKeyEvent);
+  }
+
+  @override
+  void dispose() {
+    _session.removeListener(_onSessionChanged);
+    HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
+    _session.dispose();
+    super.dispose();
+  }
+
+  void _onSessionChanged() {
+    if (mounted) setState(() {});
+  }
+
+  bool _handleKeyEvent(KeyEvent event) {
+    final isKeyDown = event is KeyDownEvent;
+    final isKeyUp = event is KeyUpEvent;
+
+    if (event.logicalKey == LogicalKeyboardKey.space) {
+      if (isKeyDown) {
+        _isSpacePressed = true;
+      } else if (isKeyUp) {
+        _isSpacePressed = false;
+      }
+      return true;
+    }
+
+    if (isKeyDown) {
+      if (HardwareKeyboard.instance.isControlPressed) {
+        switch (event.logicalKey) {
+          case LogicalKeyboardKey.keyN:
+            _newCanvas();
+            return true;
+          case LogicalKeyboardKey.keyO:
+            _openDocument();
+            return true;
+          case LogicalKeyboardKey.keyS:
+            if (HardwareKeyboard.instance.isShiftPressed) {
+              _saveAs();
+            } else {
+              _save();
+            }
+            return true;
+          case LogicalKeyboardKey.keyE:
+            _exportPng();
+            return true;
+          case LogicalKeyboardKey.keyZ:
+            if (HardwareKeyboard.instance.isShiftPressed) {
+              _session.redo();
+            } else {
+              _session.undo();
+            }
+            return true;
+          case LogicalKeyboardKey.keyY:
+            _session.redo();
+            return true;
+          case LogicalKeyboardKey.digit0:
+            _fit();
+            return true;
+          case LogicalKeyboardKey.digit1:
+            _zoom100();
+            return true;
+          case LogicalKeyboardKey.equal:
+            _zoomIn();
+            return true;
+          case LogicalKeyboardKey.minus:
+            _zoomOut();
+            return true;
+          case LogicalKeyboardKey.keyW:
+            _closeProject();
+            return true;
+          default:
+            break;
+        }
+      }
+
+      if (!HardwareKeyboard.instance.isControlPressed &&
+          !HardwareKeyboard.instance.isAltPressed) {
+        switch (event.logicalKey) {
+          case LogicalKeyboardKey.keyV:
+            _setTool(Tool.move);
+            return true;
+          case LogicalKeyboardKey.keyH:
+            _setTool(Tool.hand);
+            return true;
+          case LogicalKeyboardKey.keyZ:
+            _setTool(Tool.zoom);
+            return true;
+          case LogicalKeyboardKey.keyB:
+            _setTool(Tool.brush);
+            return true;
+          case LogicalKeyboardKey.keyI:
+            _setTool(Tool.eyedropper);
+            return true;
+          case LogicalKeyboardKey.bracketLeft:
+            _adjustBrushSize(-10);
+            return true;
+          case LogicalKeyboardKey.bracketRight:
+            _adjustBrushSize(10);
+            return true;
+          case LogicalKeyboardKey.keyE:
+            _setTool(Tool.eyedropper);
+            return true;
+          default:
+            break;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  void _setTool(Tool tool) {
+    if (!tool.isEnabledInMVP) return;
+    setState(() => _activeTool = tool);
+  }
+
+  void _adjustBrushSize(double delta) {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _brushSize = (_brushSize + delta).clamp(1.0, 2000.0);
     });
+  }
+
+  void _newCanvas() async {
+    final params = await _showNewCanvasDialog();
+    if (params != null) {
+      final layerId = _generateLayerId();
+      final document = CanvasDocument(
+        id: _generateId(),
+        width: params.width,
+        height: params.height,
+        layers: [
+          ImageLayer(
+            id: layerId,
+            name: 'Background',
+            asset: ImportedImage.createBlank(params.width, params.height, Colors.transparent),
+            transform: LayerTransform(
+              originX: 0,
+              originY: 0,
+              sizeWidth: params.width.toDouble(),
+              sizeHeight: params.height.toDouble(),
+            ),
+            isVisible: true,
+            opacity: 1.0,
+            blendMode: BlendMode.normal,
+          ),
+        ],
+        activeLayerID: layerId,
+      );
+      _session.setDocument(document);
+      _viewport.fit(800, 600, params.width.toDouble(), params.height.toDouble());
+      setState(() {});
+    }
+  }
+
+  void _openDocument() async {
+    final typeGroup = XTypeGroup(
+      label: 'Compositor Projects',
+      extensions: ['comp'],
+    );
+    final file = await openFile(acceptedTypeGroups: [typeGroup]);
+    if (file != null) {
+      try {
+        final dir = Directory(file.path);
+        final document = await ProjectStore.readComp(dir);
+        _session.setDocument(document, path: file.path);
+        _viewport.fit(800, 600, document.width.toDouble(), document.height.toDouble());
+        setState(() {});
+      } catch (e) {
+        _showError('Failed to open document: $e');
+      }
+    }
+  }
+
+  Future<void> _save() async {
+    if (_session.projectPath != null) {
+      await _session.save();
+    } else {
+      await _saveAs();
+    }
+  }
+
+  Future<void> _saveAs() async {
+    final file = await getSaveLocation(
+      acceptedTypeGroups: [
+        XTypeGroup(label: 'Compositor Projects', extensions: ['comp']),
+      ],
+      suggestedName: _session.document?.id ?? 'Untitled.comp',
+    );
+    if (file != null) {
+      await _session.saveAs(file.path);
+    }
+  }
+
+  Future<void> _exportPng() async {
+    final file = await getSaveLocation(
+      acceptedTypeGroups: [
+        XTypeGroup(label: 'PNG Image', extensions: ['png']),
+      ],
+      suggestedName: '${_session.document?.id ?? 'export'}.png',
+    );
+    if (file != null) {
+      await _session.exportPng(file.path);
+    }
+  }
+
+  void _closeProject() {
+    _session.closeDocument();
+  }
+
+  void _toggleSelectedLayerVisibility() {
+    final doc = _session.document;
+    if (doc == null || _selectedLayers.isEmpty) return;
+    final layer = _selectedLayers.first;
+    _session.setLayerVisibility(layer.id, !layer.isVisible);
+  }
+
+  void _raiseSelectedLayer() {
+    final doc = _session.document;
+    if (doc == null || _selectedLayers.isEmpty) return;
+    final index = doc.layers.indexOf(_selectedLayers.first);
+    if (index >= 0 && index < doc.layers.length - 1) {
+      _session.reorderLayer(index, index + 1);
+    }
+  }
+
+  void _lowerSelectedLayer() {
+    final doc = _session.document;
+    if (doc == null || _selectedLayers.isEmpty) return;
+    final index = doc.layers.indexOf(_selectedLayers.first);
+    if (index > 0) {
+      _session.reorderLayer(index, index - 1);
+    }
+  }
+
+  void _fit() {
+    if (_session.document != null) {
+      setState(() {
+        _viewport.fit(800, 600, _session.document!.width.toDouble(), _session.document!.height.toDouble());
+      });
+    }
+  }
+
+  void _zoom100() {
+    setState(() {
+      _viewport.setZoom100();
+    });
+  }
+
+  void _zoomIn() {
+    setState(() {
+      _viewport.zoomIn();
+    });
+  }
+
+  void _zoomOut() {
+    setState(() {
+      _viewport.zoomOut();
+    });
+  }
+
+  Future<_NewCanvasParams?> _showNewCanvasDialog() async {
+    final widthController = TextEditingController(text: '1920');
+    final heightController = TextEditingController(text: '1080');
+
+    return showDialog<_NewCanvasParams>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surfaceColor,
+        title: const Text('New Canvas'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: widthController,
+              decoration: const InputDecoration(labelText: 'Width'),
+              keyboardType: TextInputType.number,
+              style: const TextStyle(color: AppTheme.textPrimary),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: heightController,
+              decoration: const InputDecoration(labelText: 'Height'),
+              keyboardType: TextInputType.number,
+              style: const TextStyle(color: AppTheme.textPrimary),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final width = int.tryParse(widthController.text) ?? 1920;
+              final height = int.tryParse(heightController.text) ?? 1080;
+              Navigator.pop(context, _NewCanvasParams(width: width, height: height));
+            },
+            child: const Text('Create'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppTheme.accentRed,
+      ),
+    );
+  }
+
+  String _generateId() {
+    return 'DOC_${DateTime.now().microsecondsSinceEpoch.toRadixString(16).toUpperCase()}';
+  }
+
+  String _generateLayerId() {
+    return 'LAYER_${DateTime.now().microsecondsSinceEpoch.toRadixString(16).toUpperCase()}';
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+    return Focus(
+      autofocus: true,
+      child: EditorShell(
+        document: _session.document,
+        onNewCanvas: _newCanvas,
+        onOpen: _openDocument,
+        onSave: _save,
+        onSaveAs: _saveAs,
+        onExportPng: _exportPng,
+        onUndo: _session.undo,
+        onRedo: _session.redo,
+        onFit: _fit,
+        onZoom100: _zoom100,
+        onZoomIn: _zoomIn,
+        onZoomOut: _zoomOut,
+        onCloseProject: _closeProject,
+        canUndo: _session.canUndo,
+        canRedo: _session.canRedo,
+        hasUnsavedChanges: _session.hasUnsavedChanges,
+        activeTool: _activeTool,
+        onToolChanged: _setTool,
+        viewport: _viewport,
+        onViewportChanged: (v) => setState(() => _viewport = v),
+        selectedLayers: _selectedLayers,
+        onSelectionChanged: (layers) {
+          setState(() {
+            _selectedLayers = layers;
+            if (layers.isNotEmpty && _session.document != null) {
+              _session.document!.activeLayerID = layers.first.id;
+            }
+          });
+        },
+        onDeleteLayer: _selectedLayers.isNotEmpty
+            ? () => _session.removeLayer(_selectedLayers.first.id)
+            : null,
+        onDuplicateLayer: _selectedLayers.isNotEmpty
+            ? () => _session.duplicateLayer(_selectedLayers.first.id)
+            : null,
+        onAddLayer: () {
+          if (_session.document != null) {
+            final newLayer = ImageLayer(
+              id: _generateLayerId(),
+              name: 'Layer ${_session.document!.layers.length + 1}',
+              asset: ImportedImage.createBlank(
+                _session.document!.width,
+                _session.document!.height,
+                Colors.transparent,
+              ),
+              transform: LayerTransform(
+                originX: 0,
+                originY: 0,
+                sizeWidth: _session.document!.width.toDouble(),
+                sizeHeight: _session.document!.height.toDouble(),
+              ),
+              isVisible: true,
+              opacity: 1.0,
+              blendMode: BlendMode.normal,
+            );
+            _session.addLayer(newLayer);
+          }
+        },
+        onAddGroup: () {},
+        onLayerVisibilityChanged: (layer, visible) =>
+            _session.setLayerVisibility(layer.id, visible),
+        onLayerOpacityChanged: (layer, opacity) =>
+            _session.setLayerOpacity(layer.id, opacity),
+        onLayerBlendModeChanged: (layer, blendMode) =>
+            _session.setLayerBlendMode(layer.id, blendMode),
+        onLayerReorder: (oldIndex, newIndex) =>
+            _session.reorderLayer(oldIndex, newIndex),
+        onToggleLayerVisibility: _toggleSelectedLayerVisibility,
+        onRaiseLayer: _raiseSelectedLayer,
+        onLowerLayer: _lowerSelectedLayer,
+        brushSize: _brushSize,
+        brushHardness: _brushHardness,
+        brushOpacity: _brushOpacity,
+        brushColor: _brushColor,
+        onBrushSizeChanged: (v) => setState(() => _brushSize = v),
+        onBrushHardnessChanged: (v) => setState(() => _brushHardness = v),
+        onBrushOpacityChanged: (v) => setState(() => _brushOpacity = v),
+        onBrushColorChanged: (c) => setState(() => _brushColor = c),
+        brushIsEraser: _brushIsEraser,
+        onBrushModeChanged: (isEraser) => setState(() => _brushIsEraser = isEraser),
+        onBrushStroke: (dabs, isEraser) =>
+            _session.applyBrushStroke(dabs, isEraser: isEraser),
+        spacePanActive: _isSpacePressed,
       ),
     );
   }
+}
+
+class _NewCanvasParams {
+  final int width;
+  final int height;
+
+  _NewCanvasParams({required this.width, required this.height});
 }

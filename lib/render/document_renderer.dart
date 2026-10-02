@@ -119,12 +119,12 @@ class DocumentRenderer {
 
     int cacheLevel = _getCacheLevel(transform, context.zoom);
 
-    Uint8List? sourceRgba;
+    Uint8List sourceRgba;
     int sourceWidth = asset.width;
     int sourceStride = asset.stride;
 
     if (cacheLevel > 0) {
-      sourceRgba = context.downsampleCache.getLevel(
+      final level = context.downsampleCache.getLevel(
         asset.sourcePath ?? layer.id,
         cacheLevel,
         asset.width,
@@ -132,7 +132,8 @@ class DocumentRenderer {
         asset.rgba,
         asset.stride,
       );
-      if (sourceRgba != null) {
+      if (level != null) {
+        sourceRgba = level;
         sourceWidth = (asset.width + (1 << cacheLevel) - 1) >> cacheLevel;
         sourceStride = sourceWidth * 4;
       } else {
@@ -142,8 +143,6 @@ class DocumentRenderer {
     } else {
       sourceRgba = asset.rgba;
     }
-
-    if (sourceRgba == null) return;
 
     final dstW = renderRect.width.round();
     final dstH = renderRect.height.round();

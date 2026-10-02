@@ -36,5 +36,7 @@ enum BlendMode {
 
   String toJson() => jsonName;
 
+  String get displayName => jsonName;
+
   int get nativeValue => index;
 }

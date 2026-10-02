@@ -10,6 +10,7 @@ class CanvasDocument {
   final List<ImageLayer> layers;
   final List<CanvasGuide> guides;
   DocumentSelection? selection;
+  String? activeLayerID;
   final Map<String, dynamic> unknown;
 
   CanvasDocument({
@@ -20,6 +21,7 @@ class CanvasDocument {
     List<ImageLayer>? layers,
     List<CanvasGuide>? guides,
     this.selection,
+    this.activeLayerID,
     Map<String, dynamic>? unknown,
   }) : layers = layers ?? [],
        guides = guides ?? [],
@@ -48,6 +50,7 @@ class CanvasDocument {
       resolution: (json['resolution'] as num?)?.toDouble() ?? 72.0,
       layers: layers,
       guides: guides,
+      activeLayerID: json['activeLayerID'] as String?,
       unknown: unknown,
     );
   }
@@ -61,7 +64,7 @@ class CanvasDocument {
       'width': width,
       'height': height,
       'resolution': resolution,
-      'activeLayerID': layers.isNotEmpty ? layers.last.id : '',
+      'activeLayerID': activeLayerID ?? (layers.isNotEmpty ? layers.last.id : ''),
       'layers': layers.map((l) => l.toJson()).toList(),
       if (guides.isNotEmpty) 'guides': guides.map((g) => g.toJson()).toList(),
     };

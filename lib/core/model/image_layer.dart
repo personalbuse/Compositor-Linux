@@ -59,7 +59,7 @@ class ImageLayer {
       opacity: (json['opacity'] as num?)?.toDouble() ?? 1.0,
       blendMode: BlendMode.fromJson(json['blendMode'] as String? ?? 'Normal'),
       mask: json['maskFile'] != null || json['maskEnabled'] != null || json['maskSourceID'] != null
-          ? LayerMask.fromJson(json as Map<String, dynamic>)
+          ? LayerMask.fromJson(json)
           : null,
       adjustment: json['adjustment'] as Map<String, dynamic>? ?? {},
       shape: json['shape'] as Map<String, dynamic>? ?? {},
