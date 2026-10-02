@@ -109,8 +109,8 @@ class EditorShell extends StatefulWidget {
 }
 
 class _EditorShellState extends State<EditorShell> {
-  double _layersPanelWidth = AppTheme.layersPanelDefaultWidth;
-  bool _showLayersPanel = true;
+  final double _layersPanelWidth = AppTheme.layersPanelDefaultWidth;
+  final bool _showLayersPanel = true;
 
   @override
   Widget build(BuildContext context) {
@@ -494,7 +494,7 @@ class _EditorShellState extends State<EditorShell> {
         children: [
           const SizedBox(width: 12),
           Text(
-            '${zoomPercent}%',
+            '$zoomPercent%',
             style: AppTheme.statusBarStyle,
           ),
           const SizedBox(width: 24),
@@ -515,7 +515,7 @@ class _EditorShellState extends State<EditorShell> {
             color: AppTheme.borderColor,
           ),
           const SizedBox(width: 12),
-          Text(
+          const Text(
             'sRGB',
             style: AppTheme.statusBarStyle,
           ),
@@ -526,7 +526,7 @@ class _EditorShellState extends State<EditorShell> {
             color: AppTheme.borderColor,
           ),
           const SizedBox(width: 12),
-          Text(
+          const Text(
             'Transparent',
             style: AppTheme.statusBarStyle,
           ),
@@ -568,7 +568,7 @@ class _ToolbarButton extends StatelessWidget {
         child: InkWell(
           onTap: enabled ? onPressed : null,
           borderRadius: BorderRadius.circular(4),
-          child: Container(
+          child: SizedBox(
             width: 36,
             height: 36,
             child: Icon(

@@ -68,8 +68,8 @@ class AppMenuBar extends StatelessWidget {
       child: Row(
         children: [
           _menu(context, 'File', [
-            _MenuItem.action('New Canvas', 'new', shortcut: 'Ctrl+N'),
-            _MenuItem.action('Open…', 'open', shortcut: 'Ctrl+O'),
+            const _MenuItem.action('New Canvas', 'new', shortcut: 'Ctrl+N'),
+            const _MenuItem.action('Open…', 'open', shortcut: 'Ctrl+O'),
             const _MenuItem.separator(),
             _MenuItem.action('Save', 'save', shortcut: 'Ctrl+S', enabled: hasDocument),
             _MenuItem.action('Save As…', 'saveAs', shortcut: 'Ctrl+Shift+S', enabled: hasDocument),

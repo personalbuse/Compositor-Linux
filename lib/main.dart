@@ -209,7 +209,7 @@ class _CompositorHomeState extends State<CompositorHome> {
   }
 
   void _openDocument() async {
-    final typeGroup = XTypeGroup(
+    const typeGroup = XTypeGroup(
       label: 'Compositor Projects',
       extensions: ['comp'],
     );
@@ -238,7 +238,7 @@ class _CompositorHomeState extends State<CompositorHome> {
   Future<void> _saveAs() async {
     final file = await getSaveLocation(
       acceptedTypeGroups: [
-        XTypeGroup(label: 'Compositor Projects', extensions: ['comp']),
+        const XTypeGroup(label: 'Compositor Projects', extensions: ['comp']),
       ],
       suggestedName: _session.document?.id ?? 'Untitled.comp',
     );
@@ -250,7 +250,7 @@ class _CompositorHomeState extends State<CompositorHome> {
   Future<void> _exportPng() async {
     final file = await getSaveLocation(
       acceptedTypeGroups: [
-        XTypeGroup(label: 'PNG Image', extensions: ['png']),
+        const XTypeGroup(label: 'PNG Image', extensions: ['png']),
       ],
       suggestedName: '${_session.document?.id ?? 'export'}.png',
     );

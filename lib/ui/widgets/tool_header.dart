@@ -196,7 +196,7 @@ class ToolHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 24),
-          Text(
+          const Text(
             'Not available in MVP',
             style: AppTheme.layerNameSmallStyle,
           ),
@@ -237,7 +237,7 @@ class ToolHeader extends StatelessWidget {
               formatter(value),
               style: AppTheme.layerNameSmallStyle.copyWith(
                 fontFamily: 'monospace',
-                fontFeatures: [FontFeature.tabularFigures()],
+                fontFeatures: [const FontFeature.tabularFigures()],
               ),
               textAlign: TextAlign.right,
             ),
@@ -270,7 +270,7 @@ class ToolHeader extends StatelessWidget {
         child: InkWell(
           onTap: onPressed,
           borderRadius: BorderRadius.circular(4),
-          child: Container(
+          child: SizedBox(
             width: 32,
             height: 32,
             child: Icon(icon, size: 18, color: AppTheme.textPrimary),
@@ -398,7 +398,7 @@ class _ColorPickerDialogState extends State<_ColorPickerDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Hue', style: AppTheme.layerNameSmallStyle),
+        const Text('Hue', style: AppTheme.layerNameSmallStyle),
         Slider(
           value: _hue,
           min: 0,
@@ -552,7 +552,7 @@ class _SaturationValuePainter extends CustomPainter {
     );
 
     // Value gradient (vertical)
-    final valueGradient = LinearGradient(
+    const valueGradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
       colors: [

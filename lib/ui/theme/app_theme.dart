@@ -73,12 +73,10 @@ class AppTheme {
         primary: accentBlue,
         secondary: accentBlue,
         surface: surfaceColor,
-        background: windowBackground,
         error: accentRed,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: textPrimary,
-        onBackground: textPrimary,
         onError: Colors.white,
       ),
       appBarTheme: const AppBarTheme(

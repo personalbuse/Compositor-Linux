@@ -248,7 +248,7 @@ void main() {
       expect(data, isNotNull);
 
       final bytes = data!.buffer.asUint8List();
-      final centerIdx = (32 * 64 + 32) * 4;
+      const centerIdx = (32 * 64 + 32) * 4;
       expect(bytes[centerIdx + 3], equals(255),
           reason: 'opaque layer must produce opaque center pixel (render regression)');
     });

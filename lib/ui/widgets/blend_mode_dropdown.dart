@@ -22,7 +22,7 @@ class BlendModeDropdown extends StatelessWidget {
       isExpanded: true,
       isDense: dense,
       underline: const SizedBox(),
-      icon: Icon(Icons.arrow_drop_down, size: 16, color: AppTheme.textSecondary),
+      icon: const Icon(Icons.arrow_drop_down, size: 16, color: AppTheme.textSecondary),
       iconSize: 16,
       dropdownColor: AppTheme.surfaceColor,
       style: dense ? AppTheme.layerNameSmallStyle : AppTheme.layerNameStyle,

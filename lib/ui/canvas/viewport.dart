@@ -90,7 +90,7 @@ class CanvasViewport {
 
   void fit(double viewWidth, double viewHeight, double docWidth, double docHeight) {
     if (docWidth <= 0 || docHeight <= 0) return;
-    final padding = 96.0;
+    const padding = 96.0;
     final availableWidth = math.max(1, viewWidth - padding);
     final availableHeight = math.max(1, viewHeight - padding);
     final scaleX = availableWidth / docWidth;

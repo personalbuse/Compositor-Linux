@@ -36,7 +36,7 @@ class PixelHistoryEntry extends HistoryEntry {
   final ImportedImage asset;
   final Uint8List oldPixels;
   final Uint8List newPixels;
-  final List<_TileRegion> tiles;
+  final List<TileRegion> tiles;
 
   PixelHistoryEntry({
     required String name,
@@ -59,9 +59,9 @@ class PixelHistoryEntry extends HistoryEntry {
   int get memoryCost => oldPixels.length + newPixels.length;
 }
 
-class _TileRegion {
+class TileRegion {
   final int x, y, width, height;
-  _TileRegion(this.x, this.y, this.width, this.height);
+  TileRegion(this.x, this.y, this.width, this.height);
 }
 
 class StructureHistoryEntry extends HistoryEntry {
@@ -101,8 +101,7 @@ class DocumentHistory {
   final int _maxMemoryBytes;
   int _currentMemoryBytes = 0;
 
-  DocumentHistory({int maxMemoryBytes = 512 * 1024 * 1024})
-      : _maxMemoryBytes = maxMemoryBytes;
+  DocumentHistory({this._maxMemoryBytes = 512 * 1024 * 1024});
 
   bool get canUndo => _undoStack.isNotEmpty;
   bool get canRedo => _redoStack.isNotEmpty;
@@ -125,7 +124,7 @@ class DocumentHistory {
   }
 
   void pushPixels(ImportedImage asset, Uint8List oldPixels, Uint8List newPixels,
-                  List<_TileRegion> tiles, {String name = 'Brush'}) {
+                  List<TileRegion> tiles, {String name = 'Brush'}) {
     final entry = PixelHistoryEntry(
       name: name,
       asset: asset,

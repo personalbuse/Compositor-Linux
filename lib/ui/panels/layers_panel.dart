@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:compositor/ui/theme/app_theme.dart';
@@ -44,7 +43,7 @@ class _LayersPanelState extends State<LayersPanel> {
     final visibleLayers = widget.document!.layers.where((l) => !l.isGroup).toList();
 
     return ReorderableListView.builder(
-      onReorder: _onReorder,
+      onReorderItem: _onReorder,
       proxyDecorator: (child, index, animation) {
         return Material(
           elevation: 4,
@@ -104,6 +103,9 @@ class _LayersPanelState extends State<LayersPanel> {
     if (_draggedIndex == null) return;
 
     final visibleLayers = widget.document!.layers.where((l) => !l.isGroup).toList();
+    if (_draggedIndex! < 0 || _draggedIndex! >= visibleLayers.length) return;
+    if (newIndex < 0 || newIndex >= visibleLayers.length) return;
+
     final draggedLayer = visibleLayers[_draggedIndex!];
     final targetLayer = visibleLayers[newIndex];
 
@@ -204,7 +206,7 @@ class _LayerTileState extends State<_LayerTile> {
               width: 20,
               height: 20,
               alignment: Alignment.center,
-              child: Icon(
+              child: const Icon(
                 Icons.drag_indicator,
                 size: 16,
                 color: AppTheme.textMuted,
@@ -336,7 +338,7 @@ class _LayerTileState extends State<_LayerTile> {
                 Switch(
                   value: widget.layer.mask!.maskEnabled,
                   onChanged: (v) {},
-                  activeColor: AppTheme.accentBlue,
+                  activeThumbColor: AppTheme.accentBlue,
                 ),
               ],
             ),
@@ -347,7 +349,7 @@ class _LayerTileState extends State<_LayerTile> {
   }
 
   Uint8List _createThumbnail(Uint8List rgba, int width, int height) {
-    final thumbSize = 28;
+    const thumbSize = 28;
     final thumbRgba = Uint8List(thumbSize * thumbSize * 4);
 
     final scaleX = width / thumbSize;

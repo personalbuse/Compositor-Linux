@@ -7,7 +7,7 @@ class DownsampleCache {
   final int _maxPixels;
   int _currentPixels = 0;
 
-  DownsampleCache({int maxPixels = 200_000_000}) : _maxPixels = maxPixels;
+  DownsampleCache({this._maxPixels = 200_000_000});
 
   Uint8List? getLevel(String imageId, int level, int srcWidth, int srcHeight,
                       Uint8List srcRgba, int srcStride) {

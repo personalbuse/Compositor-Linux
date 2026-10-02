@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'dart:ffi';
 import 'dart:io';
 import 'package:ffi/ffi.dart';
@@ -59,9 +60,9 @@ void _testBrushAlphaBounds(DynamicLibrary dylib) {
       .lookup<NativeFunction<Void Function(Pointer<Uint8>, IntPtr, IntPtr, IntPtr, Pointer<IntPtr>)>>('brush_alpha_bounds')
       .asFunction<void Function(Pointer<Uint8>, int, int, int, Pointer<IntPtr>)>();
   
-  final width = 16;
-  final height = 16;
-  final stride = width * 4;
+  const width = 16;
+  const height = 16;
+  const stride = width * 4;
   final buffer = calloc<Uint8>(height * stride);
   
   for (int y = 0; y < height; y++) {
@@ -154,8 +155,8 @@ void _testResampleHalving(DynamicLibrary dylib) {
       .lookup<NativeFunction<Int32 Function(Pointer<Uint8>, IntPtr, IntPtr, IntPtr, Pointer<Uint8>, IntPtr)>>('compositor_halving_rgba')
       .asFunction<int Function(Pointer<Uint8>, int, int, int, Pointer<Uint8>, int)>();
   
-  final srcW = 8, srcH = 8, srcStride = 32;
-  final dstW = 4, dstH = 4, dstStride = 16;
+  const srcW = 8, srcH = 8, srcStride = 32;
+  const dstW = 4, dstH = 4, dstStride = 16;
   
   final src = calloc<Uint8>(srcH * srcStride);
   final dst = calloc<Uint8>(dstH * dstStride);

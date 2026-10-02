@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:compositor/core/model.dart';
@@ -353,7 +352,7 @@ class EditorSession extends ChangeNotifier {
 
   double _gaussianFalloff(double u, double hardness) {
     if (hardness >= 1.0) return u <= 1.0 ? 1.0 : 0.0;
-    final expVal = 2.5;
+    const expVal = 2.5;
     final numerator = math.exp(-expVal * u * u) - math.exp(-expVal);
     final denominator = 1.0 - math.exp(-expVal);
     return (1.0 - numerator / denominator).clamp(0.0, 1.0);

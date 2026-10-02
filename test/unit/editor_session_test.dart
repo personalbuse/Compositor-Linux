@@ -11,7 +11,7 @@ CanvasDocument _makeDocument() {
   for (int i = 0; i < rgba.length; i += 4) {
     rgba[i + 3] = 0;
   }
-  final layerId = 'LAYER1';
+  const layerId = 'LAYER1';
   return CanvasDocument(
     id: 'DOC1',
     width: 10,
@@ -154,7 +154,7 @@ void main() {
       session.applyBrushStroke([dab]);
 
       final rgba = session.document!.layers.first.asset!.rgba;
-      final centerIdx = (5 * 10 + 5) * 4;
+      const centerIdx = (5 * 10 + 5) * 4;
       expect(rgba[centerIdx + 3], greaterThan(0));
       expect(session.canUndo, isTrue);
 
@@ -185,7 +185,7 @@ void main() {
       session.applyBrushStroke([eraseDab], isEraser: true);
 
       final rgba = session.document!.layers.first.asset!.rgba;
-      final centerIdx = (5 * 10 + 5) * 4;
+      const centerIdx = (5 * 10 + 5) * 4;
       expect(rgba[centerIdx + 3], 0);
     });
 

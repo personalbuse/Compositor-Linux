@@ -1,6 +1,5 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/gestures.dart';
 import 'package:compositor/ui/theme/app_theme.dart';
@@ -70,8 +69,8 @@ class _CanvasViewState extends State<CanvasView> {
 
   void _updateTransformationController() {
     final matrix = Matrix4.identity()
-      ..translate(widget.viewport.panX, widget.viewport.panY)
-      ..scale(widget.viewport.scale);
+      ..translateByDouble(widget.viewport.panX, widget.viewport.panY, 0, 0)
+      ..scaleByDouble(widget.viewport.scale, widget.viewport.scale, 1, 1);
     _transformationController.value = matrix;
   }
 
@@ -153,7 +152,7 @@ class _CanvasViewState extends State<CanvasView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.image_outlined,
               size: 64,
               color: AppTheme.textMuted,
@@ -164,7 +163,7 @@ class _CanvasViewState extends State<CanvasView> {
               style: AppTheme.layerNameStyle.copyWith(color: AppTheme.textSecondary),
             ),
             const SizedBox(height: 8),
-            Text(
+            const Text(
               'Press Ctrl+N to create a new canvas',
               style: AppTheme.layerNameSmallStyle,
             ),

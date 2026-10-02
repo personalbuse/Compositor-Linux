@@ -170,7 +170,7 @@ ImportedImage _gradientImage(String name, int w, int h, {bool alphaRamp = false}
       final a = alphaRamp ? (t * 255).round() : 255;
       final r = (255 * t).round();
       final g = (255 * (1 - t)).round();
-      final b = 128;
+      const b = 128;
       final idx = (y * w + x) * 4;
       // Premultiply
       data[idx] = (r * a / 255).round();
