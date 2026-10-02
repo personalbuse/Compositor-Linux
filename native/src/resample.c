@@ -76,24 +76,23 @@ int compositor_halving_rgba(const uint8_t *src, size_t src_w, size_t src_h, size
     }
   }
   
-  float weights[16];
-  int indices[16];
-  int count;
-  
+  float wy_weights[16], wx_weights[16];
+  int wy_indices[16], wx_indices[16];
+  int wy_count, wx_count;
+
   for (size_t y = 0; y < dst_h; y++) {
+    compute_lanczos_weights(scale, wy_weights, wy_indices, &wy_count, padded_h, (int)(y + PADDING));
     for (size_t x = 0; x < dst_w; x++) {
+      compute_lanczos_weights(scale, wx_weights, wx_indices, &wx_count, padded_w, (int)(x + PADDING));
+
       float r = 0, g = 0, b = 0, a = 0;
-      
-      compute_lanczos_weights(scale, weights, indices, &count, padded_h, y + PADDING);
-      for (int ky = 0; ky < count; ky++) {
-        float wy = weights[ky];
-        int sy = indices[ky];
-        
-        compute_lanczos_weights(scale, weights, indices, &count, padded_w, x + PADDING);
-        for (int kx = 0; kx < count; kx++) {
-          float wx = weights[kx];
-          int sx = indices[kx];
-          size_t offset = sy * padded_stride + sx * 4;
+      for (int ky = 0; ky < wy_count; ky++) {
+        float wy = wy_weights[ky];
+        int sy = wy_indices[ky];
+        for (int kx = 0; kx < wx_count; kx++) {
+          float wx = wx_weights[kx];
+          int sx = wx_indices[kx];
+          size_t offset = (size_t)sy * padded_stride + (size_t)sx * 4;
           float w = wy * wx;
           r += padded[offset] * w;
           g += padded[offset + 1] * w;
@@ -101,7 +100,7 @@ int compositor_halving_rgba(const uint8_t *src, size_t src_w, size_t src_h, size
           a += padded[offset + 3] * w;
         }
       }
-      
+
       size_t dst_offset = y * dst_stride + x * 4;
       dst[dst_offset] = (uint8_t)(r + 0.5f);
       dst[dst_offset + 1] = (uint8_t)(g + 0.5f);
@@ -122,29 +121,26 @@ int compositor_halving_gray(const uint8_t *src, size_t src_w, size_t src_h, size
   size_t dst_h = (src_h + 1) / 2;
   float scale = 2.0f;
   
-  float weights[16];
-  int indices[16];
-  int count;
-  
+  float wy_weights[16], wx_weights[16];
+  int wy_indices[16], wx_indices[16];
+  int wy_count, wx_count;
+
   for (size_t y = 0; y < dst_h; y++) {
+    compute_lanczos_weights(scale, wy_weights, wy_indices, &wy_count, src_h, (int)y);
     for (size_t x = 0; x < dst_w; x++) {
+      compute_lanczos_weights(scale, wx_weights, wx_indices, &wx_count, src_w, (int)x);
+
       float val = 0;
-      
-      compute_lanczos_weights(scale, weights, indices, &count, src_h, y);
-      for (int ky = 0; ky < count; ky++) {
-        float wy = weights[ky];
-        int sy = indices[ky];
-        if (sy >= (int)src_h) sy = src_h - 1;
-        
-        compute_lanczos_weights(scale, weights, indices, &count, src_w, x);
-        for (int kx = 0; kx < count; kx++) {
-          float wx = weights[kx];
-          int sx = indices[kx];
-          if (sx >= (int)src_w) sx = src_w - 1;
+      for (int ky = 0; ky < wy_count; ky++) {
+        float wy = wy_weights[ky];
+        int sy = wy_indices[ky];
+        for (int kx = 0; kx < wx_count; kx++) {
+          float wx = wx_weights[kx];
+          int sx = wx_indices[kx];
           val += src[sy * src_stride + sx] * wy * wx;
         }
       }
-      
+
       dst[y * dst_stride + x] = (uint8_t)(val + 0.5f);
     }
   }
@@ -213,29 +209,27 @@ int compositor_resample_rgba(const uint8_t *src, size_t src_w, size_t src_h, siz
   }
   
   if (method == RESAMPLE_LANCZOS3) {
-    float weights[16];
-    int indices[16];
-    int count;
-    
+    float wy_weights[16], wx_weights[16];
+    int wy_indices[16], wx_indices[16];
+    int wy_count, wx_count;
+
     for (size_t y = 0; y < dst_h; y++) {
       float fy = (y + 0.5f) * y_scale - 0.5f;
-      compute_lanczos_weights(1.0f, weights, indices, &count, src_h, (int)fy);
-      
+      compute_lanczos_weights(1.0f, wy_weights, wy_indices, &wy_count, src_h, (int)fy);
+
       for (size_t x = 0; x < dst_w; x++) {
         float fx = (x + 0.5f) * x_scale - 0.5f;
-        compute_lanczos_weights(1.0f, weights, indices, &count, src_w, (int)fx);
-        
+        compute_lanczos_weights(1.0f, wx_weights, wx_indices, &wx_count, src_w, (int)fx);
+
         float r = 0, g = 0, b = 0, a = 0;
         float wsum = 0;
-        
-        for (int ky = 0; ky < count; ky++) {
-          float wy = weights[ky];
-          int sy = indices[ky];
-          
-          compute_lanczos_weights(1.0f, weights, indices, &count, src_w, (int)fx);
-          for (int kx = 0; kx < count; kx++) {
-            float wx = weights[kx];
-            int sx = indices[kx];
+
+        for (int ky = 0; ky < wy_count; ky++) {
+          float wy = wy_weights[ky];
+          int sy = wy_indices[ky];
+          for (int kx = 0; kx < wx_count; kx++) {
+            float wx = wx_weights[kx];
+            int sx = wx_indices[kx];
             float w = wy * wx;
             size_t offset = sy * src_stride + sx * 4;
             r += src[offset] * w;
@@ -245,14 +239,14 @@ int compositor_resample_rgba(const uint8_t *src, size_t src_w, size_t src_h, siz
             wsum += w;
           }
         }
-        
+
         if (wsum > 0) {
           r /= wsum;
           g /= wsum;
           b /= wsum;
           a /= wsum;
         }
-        
+
         size_t dst_offset = y * dst_stride + x * 4;
         dst[dst_offset] = (uint8_t)(r + 0.5f);
         dst[dst_offset + 1] = (uint8_t)(g + 0.5f);
@@ -314,34 +308,32 @@ int compositor_resample_gray(const uint8_t *src, size_t src_w, size_t src_h, siz
   }
   
   if (method == RESAMPLE_LANCZOS3) {
-    float weights[16];
-    int indices[16];
-    int count;
-    
+    float wy_weights[16], wx_weights[16];
+    int wy_indices[16], wx_indices[16];
+    int wy_count, wx_count;
+
     for (size_t y = 0; y < dst_h; y++) {
       float fy = (y + 0.5f) * y_scale - 0.5f;
-      compute_lanczos_weights(1.0f, weights, indices, &count, src_h, (int)fy);
-      
+      compute_lanczos_weights(1.0f, wy_weights, wy_indices, &wy_count, src_h, (int)fy);
+
       for (size_t x = 0; x < dst_w; x++) {
         float fx = (x + 0.5f) * x_scale - 0.5f;
-        compute_lanczos_weights(1.0f, weights, indices, &count, src_w, (int)fx);
-        
+        compute_lanczos_weights(1.0f, wx_weights, wx_indices, &wx_count, src_w, (int)fx);
+
         float val = 0;
         float wsum = 0;
-        
-        for (int ky = 0; ky < count; ky++) {
-          float wy = weights[ky];
-          int sy = indices[ky];
-          
-          compute_lanczos_weights(1.0f, weights, indices, &count, src_w, (int)fx);
-          for (int kx = 0; kx < count; kx++) {
-            float wx = weights[kx];
-            int sx = indices[kx];
+
+        for (int ky = 0; ky < wy_count; ky++) {
+          float wy = wy_weights[ky];
+          int sy = wy_indices[ky];
+          for (int kx = 0; kx < wx_count; kx++) {
+            float wx = wx_weights[kx];
+            int sx = wx_indices[kx];
             val += src[sy * src_stride + sx] * wy * wx;
             wsum += wy * wx;
           }
         }
-        
+
         if (wsum > 0) val /= wsum;
         dst[y * dst_stride + x] = (uint8_t)(val + 0.5f);
       }

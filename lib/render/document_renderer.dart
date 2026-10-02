@@ -1,5 +1,6 @@
-import 'dart:typed_data';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart';
 import '../core/model.dart';
 import 'surface.dart';
 import 'downsample_cache.dart';
@@ -73,10 +74,9 @@ class DocumentRenderer {
     canvas.restore();
 
     final picture = recorder.endRecording();
-    return picture.toImage(
-      (logicalWidth * context.zoom).round(),
-      (logicalHeight * context.zoom).round(),
-    );
+    final outputWidth = math.max(1, (logicalWidth * context.zoom).round());
+    final outputHeight = math.max(1, (logicalHeight * context.zoom).round());
+    return picture.toImage(outputWidth, outputHeight);
   }
 
   Future<Uint8List?> renderToPngBytes(RenderContext context) async {
@@ -121,6 +121,7 @@ class DocumentRenderer {
 
     Uint8List sourceRgba;
     int sourceWidth = asset.width;
+    int sourceHeight = asset.height;
     int sourceStride = asset.stride;
 
     if (cacheLevel > 0) {
@@ -135,6 +136,7 @@ class DocumentRenderer {
       if (level != null) {
         sourceRgba = level;
         sourceWidth = (asset.width + (1 << cacheLevel) - 1) >> cacheLevel;
+        sourceHeight = (asset.height + (1 << cacheLevel) - 1) >> cacheLevel;
         sourceStride = sourceWidth * 4;
       } else {
         cacheLevel = 0;
@@ -146,6 +148,34 @@ class DocumentRenderer {
 
     final dstW = renderRect.width.round();
     final dstH = renderRect.height.round();
+
+    // Final resample step: bring the (possibly half-sized) source to the
+    // destination rectangle size before compositing, so the native compositor
+    // always reads a source that matches the destination dimensions.
+    if (sourceWidth != dstW || sourceHeight != dstH) {
+      final resampled = Uint8List(dstW * dstH * 4);
+      final method = transform.sampling == TransformSampling.nearest
+          ? Resample.nearest
+          : Resample.bilinear;
+      final rc = Resample.resampleRgba(
+        sourceRgba,
+        sourceWidth,
+        sourceHeight,
+        sourceStride,
+        resampled,
+        dstW,
+        dstH,
+        dstW * 4,
+        method,
+      );
+      if (rc == 0) {
+        sourceRgba = resampled;
+        sourceWidth = dstW;
+        sourceHeight = dstH;
+        sourceStride = dstW * 4;
+      }
+    }
+
     final dstSurface = Surface.alloc(dstW, dstH);
     dstSurface.clear();
 
@@ -218,6 +248,9 @@ class DocumentRenderer {
   }
 
   Future<ui.Image?> _surfaceToImage(Surface surface) async {
+    if (surface.width <= 0 || surface.height <= 0 || surface.rgba.isEmpty) {
+      return null;
+    }
     try {
       final buffer = await ui.ImmutableBuffer.fromUint8List(surface.rgba);
       final descriptor = ui.ImageDescriptor.raw(
@@ -230,6 +263,8 @@ class DocumentRenderer {
       final frame = await codec.getNextFrame();
       return frame.image;
     } catch (e) {
+      debugPrint('DocumentRenderer: failed to build image from surface '
+          '(${surface.width}x${surface.height}, ${surface.rgba.length} bytes): $e');
       return null;
     }
   }

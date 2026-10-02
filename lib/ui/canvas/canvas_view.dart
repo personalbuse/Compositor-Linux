@@ -62,14 +62,14 @@ class _CanvasViewState extends State<CanvasView> {
   @override
   void didUpdateWidget(CanvasView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.viewport != widget.viewport) {
-      _updateTransformationController();
-    }
+    // The viewport is mutated in place (fit/zoom/pan), so compare by value and
+    // always resync the transform; identity comparison missed those updates.
+    _updateTransformationController();
   }
 
   void _updateTransformationController() {
     final matrix = Matrix4.identity()
-      ..translateByDouble(widget.viewport.panX, widget.viewport.panY, 0, 0)
+      ..translateByDouble(widget.viewport.panX, widget.viewport.panY, 0, 1)
       ..scaleByDouble(widget.viewport.scale, widget.viewport.scale, 1, 1);
     _transformationController.value = matrix;
   }
@@ -413,13 +413,16 @@ class _RenderedCanvasState extends State<_RenderedCanvas> {
       assets: assets,
     );
 
+    // Render the document at 1:1 document pixels; pan/zoom and centering are
+    // applied by the surrounding Transform, so the renderer must not apply
+    // them again (doing so made the canvas blank at any zoom other than 100%).
     final context = RenderContext(
-      canvasWidth: (widget.document.width * widget.viewport.scale).round(),
-      canvasHeight: (widget.document.height * widget.viewport.scale).round(),
-      devicePixelRatio: widget.viewport.devicePixelRatio,
-      zoom: widget.viewport.zoom,
-      panX: widget.viewport.panX,
-      panY: widget.viewport.panY,
+      canvasWidth: widget.document.width,
+      canvasHeight: widget.document.height,
+      devicePixelRatio: 1.0,
+      zoom: 1.0,
+      panX: 0,
+      panY: 0,
     );
 
     final image = await renderer.renderToImage(context);
@@ -437,11 +440,13 @@ class _RenderedCanvasState extends State<_RenderedCanvas> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return RawImage(
-      image: _renderedImage,
+    return SizedBox(
       width: widget.document.width.toDouble(),
       height: widget.document.height.toDouble(),
-      fit: BoxFit.none,
+      child: RawImage(
+        image: _renderedImage,
+        fit: BoxFit.fill,
+      ),
     );
   }
 }

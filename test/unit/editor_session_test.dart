@@ -189,6 +189,66 @@ void main() {
       expect(rgba[centerIdx + 3], 0);
     });
 
+    test('import image adds a centered layer and is undoable', () {
+      final image = ImportedImage(
+        name: 'import.png',
+        rgba: Uint8List(4 * 4 * 4),
+        width: 4,
+        height: 4,
+      );
+
+      session.importImageAsLayer(image);
+      expect(session.document!.layers.length, 2);
+
+      final layer = session.document!.layers.last;
+      expect(layer.asset, same(image));
+      expect(layer.transform.sizeWidth, 4);
+      expect(layer.transform.sizeHeight, 4);
+      // Centered inside the 10x10 document.
+      expect(layer.transform.originX, 3);
+      expect(layer.transform.originY, 3);
+      expect(session.document!.activeLayerID, layer.id);
+      expect(session.canUndo, isTrue);
+
+      session.undo();
+      expect(session.document!.layers.length, 1);
+    });
+
+    test('import image scales down to fit the canvas', () {
+      final image = ImportedImage(
+        name: 'big.png',
+        rgba: Uint8List(40 * 20 * 4),
+        width: 40,
+        height: 20,
+      );
+
+      session.importImageAsLayer(image);
+      final layer = session.document!.layers.last;
+      expect(layer.transform.sizeWidth, 10);
+      expect(layer.transform.sizeHeight, 5);
+      expect(layer.transform.originX, 0);
+      expect(layer.transform.originY, closeTo(2.5, 0.001));
+    });
+
+    test('import image with no document creates one sized to the image', () {
+      final empty = EditorSession();
+      addTearDown(empty.dispose);
+
+      final image = ImportedImage(
+        name: 'solo.png',
+        rgba: Uint8List(20 * 10 * 4),
+        width: 20,
+        height: 10,
+      );
+
+      empty.importImageAsLayer(image);
+      expect(empty.document, isNotNull);
+      expect(empty.document!.width, 20);
+      expect(empty.document!.height, 10);
+      expect(empty.document!.layers.length, 1);
+      expect(empty.hasUnsavedChanges, isTrue);
+    });
+
     test('markDirty and markClean toggle unsaved changes', () {
       expect(session.hasUnsavedChanges, isFalse);
       session.markDirty();

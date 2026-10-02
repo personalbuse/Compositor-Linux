@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:path/path.dart' as path;
 import 'package:image/image.dart' as img;
 import '../../core/model.dart';
+import '../image/image_importer.dart';
 
 class ProjectStore {
   static Future<CanvasDocument> readComp(Directory compDir) async {
@@ -83,7 +83,7 @@ class ProjectStore {
         throw ProjectStoreException('Failed to decode image: $imageFile');
       }
 
-      final rgba = _convertToPremultipliedRGBA(decoded);
+      final rgba = premultipliedRgbaFromImage(decoded);
 
       layer.asset = ImportedImage(
         name: imageFile,
@@ -116,39 +116,6 @@ class ProjectStore {
         // Mask already exists, keep it (round-trip)
       }
     }
-  }
-
-  static Uint8List _convertToPremultipliedRGBA(img.Image image) {
-    final rgba = Uint8List(image.width * image.height * 4);
-    int idx = 0;
-    for (int y = 0; y < image.height; y++) {
-      for (int x = 0; x < image.width; x++) {
-        final pixel = image.getPixel(x, y);
-        final r = pixel.r.toInt();
-        final g = pixel.g.toInt();
-        final b = pixel.b.toInt();
-        final a = pixel.a.toInt();
-        
-        if (a == 0) {
-          rgba[idx] = 0;
-          rgba[idx + 1] = 0;
-          rgba[idx + 2] = 0;
-          rgba[idx + 3] = 0;
-        } else if (a < 255) {
-          rgba[idx] = (r * a / 255).round().clamp(0, 255);
-          rgba[idx + 1] = (g * a / 255).round().clamp(0, 255);
-          rgba[idx + 2] = (b * a / 255).round().clamp(0, 255);
-          rgba[idx + 3] = a;
-        } else {
-          rgba[idx] = r;
-          rgba[idx + 1] = g;
-          rgba[idx + 2] = b;
-          rgba[idx + 3] = 255;
-        }
-        idx += 4;
-      }
-    }
-    return rgba;
   }
 
   static void _validateManifest(Map<String, dynamic> manifest) {

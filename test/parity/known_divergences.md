@@ -7,11 +7,11 @@ This document tracks known visual differences between the macOS original (CPU pa
 ### Resampling
 - **Lanczos-3 halving**: Minor differences at image edges due to padding strategy (original uses 8px transparent padding, port replicates but edge handling may differ by ≤1 pixel value)
 - **Bilinear final resample**: Sub-pixel differences in gradient areas (≤2 channel values)
-- **1:1 transform scaling not yet resampled**: when a layer's `transform.size` differs from
-  its asset's pixel size, the compositor currently crops/handles 1:1 rather than resampling the
-  source to the destination rectangle. `Nearest`/`Smooth`/`High quality` sampling at zoom = 1
-  is therefore not yet applied. Fixtures are authored with `asset size >= transform size` to stay
-  deterministic. (Fix planned alongside the resampler in Phase 2 follow-up / M2.)
+- **Final resample uses bilinear/nearest, not Lanczos**: when `transform.size` differs from the
+  asset's pixel size (or after the downsample cache), the source is now resampled to the
+  destination rectangle with bilinear (`Smooth`/`High quality`) or nearest (`Nearest`). High
+  quality uses Lanczos-3 only for the halving steps, with a bilinear final step; a full Lanczos
+  final resample is deferred to M2.
 
 ### Layer Masks
 - Mask PNG pixels are round-tripped but **not yet loaded into the render pipeline**; the

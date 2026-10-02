@@ -24,6 +24,7 @@ Port of the macOS **Compositor** image editor to Linux and Windows using Flutter
 | Layer masks (raster) | ✅ render |
 | Downsample cache (Lanczos halving) | ✅ |
 | Export PNG (flattened 1:1) | ✅ |
+| Import PNG/JPEG as a layer (Open, or Open Project Folder for `.comp`) | ✅ |
 | Shell: menu bar, toolbar, rail, status bar, dark theme | ✅ |
 | Layers panel (visibility, opacity, blend, reorder, add/dup/delete) | ✅ |
 | Brush paint/erase with commit + undo | ✅ |

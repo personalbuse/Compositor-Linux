@@ -202,6 +202,74 @@ class EditorSession extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Imports [image] as a new layer.
+  ///
+  /// If a document is open, the image is added as a centered layer (scaled
+  /// down to fit when larger than the canvas, never upscaled). If no document
+  /// is open, a new document sized to the image is created instead.
+  void importImageAsLayer(ImportedImage image, {String? name}) {
+    final layerId = _generateId();
+    final layerName = name ?? image.name;
+
+    if (_document == null) {
+      final document = CanvasDocument(
+        id: _generateDocumentId(),
+        width: image.width,
+        height: image.height,
+        layers: [
+          ImageLayer(
+            id: layerId,
+            name: layerName,
+            asset: image,
+            transform: LayerTransform(
+              originX: 0,
+              originY: 0,
+              sizeWidth: image.width.toDouble(),
+              sizeHeight: image.height.toDouble(),
+            ),
+            isVisible: true,
+            opacity: 1.0,
+            blendMode: BlendMode.normal,
+          ),
+        ],
+        activeLayerID: layerId,
+      );
+      setDocument(document);
+      markDirty();
+      return;
+    }
+
+    final document = _document!;
+    final fit = math.min(
+      1.0,
+      math.min(
+        document.width / image.width,
+        document.height / image.height,
+      ),
+    );
+    final width = image.width * fit;
+    final height = image.height * fit;
+
+    final layer = ImageLayer(
+      id: layerId,
+      name: layerName,
+      asset: image,
+      transform: LayerTransform(
+        originX: (document.width - width) / 2,
+        originY: (document.height - height) / 2,
+        sizeWidth: width,
+        sizeHeight: height,
+      ),
+      isVisible: true,
+      opacity: 1.0,
+      blendMode: BlendMode.normal,
+    );
+
+    addLayer(layer);
+    document.activeLayerID = layerId;
+    notifyListeners();
+  }
+
   void removeLayer(String layerId) {
     if (_document == null) return;
     final index = _document!.layers.indexWhere((l) => l.id == layerId);
@@ -361,5 +429,10 @@ class EditorSession extends ChangeNotifier {
   String _generateId() {
     final random = DateTime.now().microsecondsSinceEpoch;
     return 'LAYER_${random.toRadixString(16).toUpperCase()}';
+  }
+
+  String _generateDocumentId() {
+    final random = DateTime.now().microsecondsSinceEpoch;
+    return 'DOC_${random.toRadixString(16).toUpperCase()}';
   }
 }

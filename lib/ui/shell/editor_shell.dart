@@ -12,6 +12,7 @@ class EditorShell extends StatefulWidget {
   final CanvasDocument? document;
   final VoidCallback? onNewCanvas;
   final VoidCallback? onOpen;
+  final VoidCallback? onOpenProject;
   final VoidCallback? onSave;
   final VoidCallback? onSaveAs;
   final VoidCallback? onExportPng;
@@ -60,6 +61,7 @@ class EditorShell extends StatefulWidget {
     this.document,
     this.onNewCanvas,
     this.onOpen,
+    this.onOpenProject,
     this.onSave,
     this.onSaveAs,
     this.onExportPng,
@@ -121,6 +123,7 @@ class _EditorShellState extends State<EditorShell> {
           AppMenuBar(
             onNewCanvas: widget.onNewCanvas,
             onOpen: widget.onOpen,
+            onOpenProject: widget.onOpenProject,
             onSave: widget.onSave,
             onSaveAs: widget.onSaveAs,
             onExportPng: widget.onExportPng,

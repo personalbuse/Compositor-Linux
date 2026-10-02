@@ -6,15 +6,28 @@ import 'package:compositor/ui/shell/editor_shell.dart';
 import 'package:compositor/ui/canvas/viewport.dart';
 import 'package:compositor/core/session/editor_session.dart';
 import 'package:compositor/core/model.dart';
+import 'package:compositor/core/native_bindings.dart';
 import 'package:compositor/io/comp.dart';
+import 'package:compositor/io/image.dart';
 import 'package:file_selector/file_selector.dart';
 
 void main() {
-  runApp(const CompositorApp());
+  WidgetsFlutterBinding.ensureInitialized();
+
+  Object? initError;
+  try {
+    NativeBindings.initialize();
+  } catch (e) {
+    initError = e;
+  }
+
+  runApp(CompositorApp(initError: initError));
 }
 
 class CompositorApp extends StatelessWidget {
-  const CompositorApp({super.key});
+  final Object? initError;
+
+  const CompositorApp({super.key, this.initError});
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +36,60 @@ class CompositorApp extends StatelessWidget {
       theme: AppTheme.themeData,
       darkTheme: AppTheme.themeData,
       themeMode: ThemeMode.dark,
-      home: const CompositorHome(),
+      home: initError == null
+          ? const CompositorHome()
+          : _NativeLibraryErrorScreen(error: initError!),
       debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
+class _NativeLibraryErrorScreen extends StatelessWidget {
+  final Object error;
+
+  const _NativeLibraryErrorScreen({required this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.windowBackground,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline,
+                  color: AppTheme.accentRed, size: 48),
+              const SizedBox(height: 16),
+              const Text(
+                'Compositor failed to start',
+                style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'The native rendering library could not be loaded.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppTheme.textSecondary),
+              ),
+              const SizedBox(height: 16),
+              SelectableText(
+                '$error',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppTheme.textMuted,
+                  fontSize: 12,
+                  fontFamily: 'monospace',
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -210,20 +275,50 @@ class _CompositorHomeState extends State<CompositorHome> {
 
   void _openDocument() async {
     const typeGroup = XTypeGroup(
-      label: 'Compositor Projects',
-      extensions: ['comp'],
+      label: 'Compositor Images & Projects',
+      extensions: ['comp', 'png', 'jpg', 'jpeg', 'webp', 'bmp', 'gif'],
     );
     final file = await openFile(acceptedTypeGroups: [typeGroup]);
-    if (file != null) {
-      try {
-        final dir = Directory(file.path);
-        final document = await ProjectStore.readComp(dir);
-        _session.setDocument(document, path: file.path);
-        _viewport.fit(800, 600, document.width.toDouble(), document.height.toDouble());
-        setState(() {});
-      } catch (e) {
-        _showError('Failed to open document: $e');
+    if (file == null) return;
+    await _openPath(file.path);
+  }
+
+  void _openProjectFolder() async {
+    final dirPath = await getDirectoryPath();
+    if (dirPath == null) return;
+    await _openComp(dirPath);
+  }
+
+  Future<void> _openPath(String filePath) async {
+    if (ImageImporter.hasImageExtension(filePath)) {
+      await _importImage(filePath);
+    } else {
+      await _openComp(filePath);
+    }
+  }
+
+  Future<void> _openComp(String dirPath) async {
+    try {
+      final document = await ProjectStore.readComp(Directory(dirPath));
+      _session.setDocument(document, path: dirPath);
+      _viewport.fit(800, 600, document.width.toDouble(), document.height.toDouble());
+      setState(() {});
+    } catch (e) {
+      _showError('Failed to open document: $e');
+    }
+  }
+
+  Future<void> _importImage(String filePath) async {
+    try {
+      final image = await ImageImporter.fromFile(filePath);
+      _session.importImageAsLayer(image);
+      final doc = _session.document;
+      if (doc != null) {
+        _viewport.fit(800, 600, doc.width.toDouble(), doc.height.toDouble());
       }
+      setState(() {});
+    } catch (e) {
+      _showError('Failed to import image: $e');
     }
   }
 
@@ -384,6 +479,7 @@ class _CompositorHomeState extends State<CompositorHome> {
         document: _session.document,
         onNewCanvas: _newCanvas,
         onOpen: _openDocument,
+        onOpenProject: _openProjectFolder,
         onSave: _save,
         onSaveAs: _saveAs,
         onExportPng: _exportPng,

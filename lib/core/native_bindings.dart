@@ -17,9 +17,14 @@ class NativeBindings {
     final scriptDir = File(Platform.script.toFilePath()).parent.path;
     final buildDir = Directory('$scriptDir/../../build').absolute;
     final projectDir = Directory('$scriptDir/../..').absolute;
+    // Directory containing the running executable (packaged bundle layout).
+    final exeDir = File(Platform.resolvedExecutable).parent.path;
 
     if (Platform.isLinux) {
       final candidates = <String>[
+        // Packaged bundle: <bundle>/lib/libcompositor_core.so
+        '$exeDir/lib/libcompositor_core.so',
+        '$scriptDir/lib/libcompositor_core.so',
         // flutter test runs from build directory
         '$buildDir/linux/x64/debug/bundle/lib/libcompositor_core.so',
         '$buildDir/linux/x64/release/bundle/lib/libcompositor_core.so',
@@ -35,12 +40,24 @@ class NativeBindings {
         '/home/daviuk/Documentos/Work/Compositor-Linux/build/linux/x64/debug/compositor_core/libcompositor_core.so',
         '/home/daviuk/Documentos/Work/Compositor-Linux/build/linux/x64/release/compositor_core/libcompositor_core.so',
       ];
-      for (final c in candidates) {
-        if (File(c).existsSync()) return DynamicLibrary.open(c);
+      try {
+        for (final c in candidates) {
+          if (File(c).existsSync()) return DynamicLibrary.open(c);
+        }
+        // Last resort: rely on the dynamic loader (rpath $ORIGIN/lib / LD_LIBRARY_PATH).
+        return DynamicLibrary.open('libcompositor_core.so');
+      } catch (e) {
+        throw StateError(
+          'Failed to load libcompositor_core.so. Ensure the native library '
+          'was built (flutter build linux) and ships next to the executable. '
+          'Searched: $candidates. Original error: $e',
+        );
       }
-      return DynamicLibrary.open('libcompositor_core.so');
     } else if (Platform.isWindows) {
       final candidates = [
+        // Packaged bundle: DLL next to compositor.exe
+        '$exeDir/compositor_core.dll',
+        '$scriptDir/compositor_core.dll',
         '$buildDir/windows/x64/runner/Debug/compositor_core.dll',
         '$buildDir/windows/x64/runner/Release/compositor_core.dll',
         '$buildDir/Debug/compositor_core.dll',
@@ -48,10 +65,19 @@ class NativeBindings {
         '$projectDir/build/windows/x64/runner/Debug/compositor_core.dll',
         '$projectDir/build/windows/x64/runner/Release/compositor_core.dll',
       ];
-      for (final c in candidates) {
-        if (File(c).existsSync()) return DynamicLibrary.open(c);
+      try {
+        for (final c in candidates) {
+          if (File(c).existsSync()) return DynamicLibrary.open(c);
+        }
+        // Windows searches the executable directory by default.
+        return DynamicLibrary.open('compositor_core.dll');
+      } catch (e) {
+        throw StateError(
+          'Failed to load compositor_core.dll. Ensure the native library was '
+          'built (flutter build windows) and ships next to the executable. '
+          'Searched: $candidates. Original error: $e',
+        );
       }
-      return DynamicLibrary.open('compositor_core.dll');
     }
     throw UnsupportedError('Platform not supported');
   }
@@ -75,6 +101,11 @@ class NativeBindings {
     list.setAll(0, typedList);
   }
 
+  static void _copyPointerToInt32List(Pointer<Int32> ptr, Int32List list) {
+    final typedList = ptr.asTypedList(list.length);
+    list.setAll(0, typedList);
+  }
+
   static void brushAlphaBounds(Uint8List rgba, int width, int height, int stride, Int32List bounds) {
     final func = _lib
         .lookup<NativeFunction<Void Function(Pointer<Uint8>, IntPtr, IntPtr, IntPtr, Pointer<Int32>)>>('brush_alpha_bounds')
@@ -84,6 +115,7 @@ class NativeBindings {
     final boundsPtr = _int32ListToPointer(bounds);
     try {
       func(rgbaPtr, width, height, stride, boundsPtr);
+      _copyPointerToInt32List(boundsPtr, bounds);
     } finally {
       calloc.free(rgbaPtr);
       calloc.free(boundsPtr);
@@ -128,7 +160,9 @@ class NativeBindings {
     final srcPtr = _uint8ListToPointer(src);
     final dstPtr = _uint8ListToPointer(dst);
     try {
-      return func(srcPtr, srcW, srcH, srcStride, dstPtr, dstStride);
+      final result = func(srcPtr, srcW, srcH, srcStride, dstPtr, dstStride);
+      _copyPointerToUint8List(dstPtr, dst);
+      return result;
     } finally {
       calloc.free(srcPtr);
       calloc.free(dstPtr);
@@ -143,7 +177,9 @@ class NativeBindings {
     final srcPtr = _uint8ListToPointer(src);
     final dstPtr = _uint8ListToPointer(dst);
     try {
-      return func(srcPtr, srcW, srcH, srcStride, dstPtr, dstStride);
+      final result = func(srcPtr, srcW, srcH, srcStride, dstPtr, dstStride);
+      _copyPointerToUint8List(dstPtr, dst);
+      return result;
     } finally {
       calloc.free(srcPtr);
       calloc.free(dstPtr);
@@ -159,7 +195,9 @@ class NativeBindings {
     final srcPtr = _uint8ListToPointer(src);
     final dstPtr = _uint8ListToPointer(dst);
     try {
-      return func(srcPtr, srcW, srcH, srcStride, dstPtr, dstW, dstH, dstStride, method);
+      final result = func(srcPtr, srcW, srcH, srcStride, dstPtr, dstW, dstH, dstStride, method);
+      _copyPointerToUint8List(dstPtr, dst);
+      return result;
     } finally {
       calloc.free(srcPtr);
       calloc.free(dstPtr);
@@ -175,7 +213,9 @@ class NativeBindings {
     final srcPtr = _uint8ListToPointer(src);
     final dstPtr = _uint8ListToPointer(dst);
     try {
-      return func(srcPtr, srcW, srcH, srcStride, dstPtr, dstW, dstH, dstStride, method);
+      final result = func(srcPtr, srcW, srcH, srcStride, dstPtr, dstW, dstH, dstStride, method);
+      _copyPointerToUint8List(dstPtr, dst);
+      return result;
     } finally {
       calloc.free(srcPtr);
       calloc.free(dstPtr);

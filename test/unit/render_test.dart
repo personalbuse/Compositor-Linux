@@ -104,6 +104,30 @@ void main() {
       expect(dst.length, equals(64));
     });
 
+    test('halvingRgba handles non-square images and writes output (regression)', () {
+      // padded_w > padded_h previously let X indices be used as Y indices,
+      // causing an out-of-bounds read / SIGSEGV for landscape images.
+      const srcW = 128, srcH = 64;
+      final src = Uint8List(srcW * srcH * 4);
+      for (int i = 0; i < src.length; i += 4) {
+        src[i] = 200;
+        src[i + 1] = 100;
+        src[i + 2] = 50;
+        src[i + 3] = 255;
+      }
+      const dstW = 64, dstH = 32;
+      final dst = Uint8List(dstW * dstH * 4);
+
+      final result = Resample.halvingRgba(src, srcW, srcH, srcW * 4, dst, dstW * 4);
+      expect(result, equals(0));
+
+      const idx = (16 * dstW + 32) * 4;
+      expect(dst[idx], closeTo(200, 2));
+      expect(dst[idx + 1], closeTo(100, 2));
+      expect(dst[idx + 2], closeTo(50, 2));
+      expect(dst[idx + 3], 255);
+    });
+
     test('halvingGray reduces by half', () {
       final src = Uint8List(8 * 8);
       src.fillRange(0, src.length, 128);
@@ -111,6 +135,24 @@ void main() {
       final result = Resample.halvingGray(src, 8, 8, 8, dst, 4);
       expect(result, equals(0));
       expect(dst.length, equals(16));
+    });
+
+    test('resampleRgba scales source to destination size (regression)', () {
+      final src = Uint8List(4 * 4 * 4);
+      for (int i = 0; i < src.length; i += 4) {
+        src[i] = 10;
+        src[i + 1] = 20;
+        src[i + 2] = 30;
+        src[i + 3] = 255;
+      }
+      final dst = Uint8List(2 * 2 * 4);
+      final result = Resample.resampleRgba(
+          src, 4, 4, 16, dst, 2, 2, 8, Resample.bilinear);
+      expect(result, equals(0));
+      expect(dst[0], closeTo(10, 2));
+      expect(dst[1], closeTo(20, 2));
+      expect(dst[2], closeTo(30, 2));
+      expect(dst[3], 255);
     });
 
     test('clampPremultiplied unpremultiplies RGB (converts to straight alpha)', () {

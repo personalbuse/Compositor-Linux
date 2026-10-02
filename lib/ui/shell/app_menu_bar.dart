@@ -19,6 +19,7 @@ class _MenuItem {
 class AppMenuBar extends StatelessWidget {
   final VoidCallback? onNewCanvas;
   final VoidCallback? onOpen;
+  final VoidCallback? onOpenProject;
   final VoidCallback? onSave;
   final VoidCallback? onSaveAs;
   final VoidCallback? onExportPng;
@@ -41,6 +42,7 @@ class AppMenuBar extends StatelessWidget {
     super.key,
     this.onNewCanvas,
     this.onOpen,
+    this.onOpenProject,
     this.onSave,
     this.onSaveAs,
     this.onExportPng,
@@ -69,7 +71,8 @@ class AppMenuBar extends StatelessWidget {
         children: [
           _menu(context, 'File', [
             const _MenuItem.action('New Canvas', 'new', shortcut: 'Ctrl+N'),
-            const _MenuItem.action('Open…', 'open', shortcut: 'Ctrl+O'),
+            const _MenuItem.action('Open Image / Project…', 'open', shortcut: 'Ctrl+O'),
+            const _MenuItem.action('Open Project Folder…', 'openProject'),
             const _MenuItem.separator(),
             _MenuItem.action('Save', 'save', shortcut: 'Ctrl+S', enabled: hasDocument),
             _MenuItem.action('Save As…', 'saveAs', shortcut: 'Ctrl+Shift+S', enabled: hasDocument),
@@ -155,6 +158,8 @@ class AppMenuBar extends StatelessWidget {
         onNewCanvas?.call();
       case 'open':
         onOpen?.call();
+      case 'openProject':
+        onOpenProject?.call();
       case 'save':
         onSave?.call();
       case 'saveAs':
