@@ -10,7 +10,7 @@ Port of the macOS **Compositor** image editor to Linux and Windows using Flutter
 | 1 | Engine & format (model, `.comp` I/O, surface, history) | ✅ Complete |
 | 2 | Render MVP (24 blend modes, compositor, export PNG) | ✅ Complete |
 | 3 | UI & brush MVP (shell, layers, brush, file ops) | ✅ Complete |
-| 4 | MVP validation & closure (parity, packaging, tag) | 🔄 In progress |
+| 4 | MVP validation & closure (parity, packaging, tag) | ✅ Complete |
 
 ## Feature matrix (MVP)
 
@@ -83,6 +83,25 @@ Given no reference, the harness runs a render-determinism check and skips the
 comparison. Tolerances and accepted divergences are documented in
 `test/parity/known_divergences.md`.
 
+> Parity comparison against macOS reference renders is **pending**: references
+> require a macOS machine with the original app (procedure in
+> `tool/parity/generate_reference.md`). Until they are committed, the harness
+> verifies render determinism only.
+
+## Packaging & releases
+
+```bash
+tool/package/package_linux.sh          # dist/*.tar.gz (+ AppImage if appimagetool is on PATH)
+tool/package/package_windows.ps1       # dist/*.zip (+ setup.exe if Inno Setup's iscc is on PATH)
+```
+
+Both scripts read the version from `pubspec.yaml` and write to `dist/` (gitignored).
+The Windows installer is defined in `tool/package/compositor.iss`.
+
+Pushing a `v*` tag triggers `.github/workflows/release.yml`, which builds the Linux
+and Windows bundles, checks the tag matches the `pubspec.yaml` version, and attaches
+the artifacts to a GitHub release. The MVP release tag is `v0.1.0-mvp`.
+
 ## Project structure
 
 ```
@@ -107,8 +126,9 @@ Compositor-Linux/
 │   └── fixtures/               # generated *.comp
 ├── tool/
 │   ├── ffi_check.dart
-│   └── parity/                 # fixture + reference generators
-└── .github/workflows/ci.yml
+│   ├── parity/                 # fixture + reference generators
+│   └── package/                # Linux/Windows packaging + Inno Setup script
+└── .github/workflows/          # ci.yml (test/build) + release.yml (tag packaging)
 ```
 
 ## License
