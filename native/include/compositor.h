@@ -39,7 +39,7 @@ void compositor_blend_pixel(uint8_t *dst_rgba, const uint8_t *src_rgba, BlendMod
 void compositor_composite_layer(const uint8_t *src, size_t src_stride,
                                 uint8_t *dst, size_t dst_stride,
                                 size_t width, size_t height,
-                                float opacity, BlendMode mode,
+                                double opacity, BlendMode mode,
                                 const uint8_t *mask, size_t mask_stride);
 
 #ifdef __cplusplus

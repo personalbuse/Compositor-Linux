@@ -219,9 +219,14 @@ class DocumentRenderer {
 
   Future<ui.Image?> _surfaceToImage(Surface surface) async {
     try {
-      final codec = await ui.instantiateImageCodec(
-        surface.rgba.buffer.asUint8List(),
+      final buffer = await ui.ImmutableBuffer.fromUint8List(surface.rgba);
+      final descriptor = ui.ImageDescriptor.raw(
+        buffer,
+        width: surface.width,
+        height: surface.height,
+        pixelFormat: ui.PixelFormat.rgba8888,
       );
+      final codec = await descriptor.instantiateCodec();
       final frame = await codec.getNextFrame();
       return frame.image;
     } catch (e) {

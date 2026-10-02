@@ -39,6 +39,12 @@ jobs:
       - name: Run FFI smoke tests
         run: dart run tool/ffi_check.dart
 
+      - name: Regenerate parity fixtures
+        run: dart run tool/parity/generate_fixtures.dart
+
+      - name: Parity comparison (skips when references absent)
+        run: flutter test test/parity --dart-define=PARITY=1
+
   test-windows:
     name: Windows
     runs-on: windows-latest
@@ -65,3 +71,9 @@ jobs:
       
       - name: Run FFI smoke tests
         run: dart run tool/ffi_check.dart
+
+      - name: Regenerate parity fixtures
+        run: dart run tool/parity/generate_fixtures.dart
+
+      - name: Parity comparison (skips when references absent)
+        run: flutter test test/parity --dart-define=PARITY=1

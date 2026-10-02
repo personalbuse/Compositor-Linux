@@ -1,0 +1,122 @@
+{
+  "format": "com.compositor.project",
+  "version": 11,
+  "colorSpace": "sRGB",
+  "documentID": "00000000-0000-0000-0000-0000000001EB",
+  "width": 256,
+  "height": 256,
+  "resolution": 72.0,
+  "activeLayerID": "00000000-0000-0000-0000-00000000000D",
+  "layers": [
+    {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "name": "Backdrop",
+      "transform": {
+        "origin": [
+          0.0,
+          0.0
+        ],
+        "size": [
+          256.0,
+          256.0
+        ],
+        "rotation": 0.0,
+        "flipX": false,
+        "flipY": false,
+        "sampling": "High quality"
+      },
+      "isGroup": false,
+      "isVisible": true,
+      "opacity": 1.0,
+      "blendMode": "Normal"
+    },
+    {
+      "id": "00000000-0000-0000-0000-00000000000A",
+      "name": "Hue",
+      "transform": {
+        "origin": [
+          0.0,
+          0.0
+        ],
+        "size": [
+          256.0,
+          64.0
+        ],
+        "rotation": 0.0,
+        "flipX": false,
+        "flipY": false,
+        "sampling": "High quality"
+      },
+      "isGroup": false,
+      "isVisible": true,
+      "opacity": 1.0,
+      "blendMode": "Hue"
+    },
+    {
+      "id": "00000000-0000-0000-0000-00000000000B",
+      "name": "Saturation",
+      "transform": {
+        "origin": [
+          0.0,
+          64.0
+        ],
+        "size": [
+          256.0,
+          64.0
+        ],
+        "rotation": 0.0,
+        "flipX": false,
+        "flipY": false,
+        "sampling": "High quality"
+      },
+      "isGroup": false,
+      "isVisible": true,
+      "opacity": 1.0,
+      "blendMode": "Saturation"
+    },
+    {
+      "id": "00000000-0000-0000-0000-00000000000C",
+      "name": "Color",
+      "transform": {
+        "origin": [
+          0.0,
+          128.0
+        ],
+        "size": [
+          256.0,
+          64.0
+        ],
+        "rotation": 0.0,
+        "flipX": false,
+        "flipY": false,
+        "sampling": "High quality"
+      },
+      "isGroup": false,
+      "isVisible": true,
+      "opacity": 1.0,
+      "blendMode": "Color"
+    },
+    {
+      "id": "00000000-0000-0000-0000-00000000000D",
+      "name": "Luminosity",
+      "transform": {
+        "origin": [
+          0.0,
+          192.0
+        ],
+        "size": [
+          256.0,
+          64.0
+        ],
+        "rotation": 0.0,
+        "flipX": false,
+        "flipY": false,
+        "sampling": "High quality"
+      },
+      "isGroup": false,
+      "isVisible": true,
+      "opacity": 1.0,
+      "blendMode": "Luminosity"
+    }
+  ]
+}

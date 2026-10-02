@@ -188,7 +188,7 @@ class _CompositorHomeState extends State<CompositorHome> {
           ImageLayer(
             id: layerId,
             name: 'Background',
-            asset: ImportedImage.createBlank(params.width, params.height, Colors.transparent),
+            asset: ImportedImage.createBlank(params.width, params.height),
             transform: LayerTransform(
               originX: 0,
               originY: 0,
@@ -424,7 +424,6 @@ class _CompositorHomeState extends State<CompositorHome> {
               asset: ImportedImage.createBlank(
                 _session.document!.width,
                 _session.document!.height,
-                Colors.transparent,
               ),
               transform: LayerTransform(
                 originX: 0,

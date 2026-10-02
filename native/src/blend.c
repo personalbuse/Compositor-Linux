@@ -75,6 +75,7 @@ void blend_rgb(float *cb, const float *cs, BlendMode mode) {
     case BLEND_SATURATION: s = ss; break;
     case BLEND_COLOR: h = hs; s = ss; break;
     case BLEND_LUMINOSITY: l = ls; break;
+    default: break;
   }
   
   hsl_to_rgb(h, s, l, &cb[0], &cb[1], &cb[2]);

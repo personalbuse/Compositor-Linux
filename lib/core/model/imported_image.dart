@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'dart:ui' as ui;
 
 class ImportedImage {
   final String name;
@@ -16,17 +15,20 @@ class ImportedImage {
     this.sourcePath,
   });
 
-  factory ImportedImage.createBlank(int width, int height, ui.Color color) {
+  factory ImportedImage.createBlank(
+    int width,
+    int height, {
+    int red = 0,
+    int green = 0,
+    int blue = 0,
+    int alpha = 0,
+  }) {
     final rgba = Uint8List(width * height * 4);
-    final r = (color.r * 255).round();
-    final g = (color.g * 255).round();
-    final b = (color.b * 255).round();
-    final a = (color.a * 255).round();
     for (int i = 0; i < rgba.length; i += 4) {
-      rgba[i] = r;
-      rgba[i + 1] = g;
-      rgba[i + 2] = b;
-      rgba[i + 3] = a;
+      rgba[i] = red;
+      rgba[i + 1] = green;
+      rgba[i + 2] = blue;
+      rgba[i + 3] = alpha;
     }
     return ImportedImage(
       name: 'blank_${width}x$height',

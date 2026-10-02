@@ -1,0 +1,125 @@
+{
+  "format": "com.compositor.project",
+  "version": 11,
+  "colorSpace": "sRGB",
+  "documentID": "00000000-0000-0000-0000-000000000298",
+  "width": 256,
+  "height": 256,
+  "resolution": 72.0,
+  "activeLayerID": "00000000-0000-0000-0000-000000000005",
+  "layers": [
+    {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "name": "Background",
+      "transform": {
+        "origin": [
+          0.0,
+          0.0
+        ],
+        "size": [
+          256.0,
+          256.0
+        ],
+        "rotation": 0.0,
+        "flipX": false,
+        "flipY": false,
+        "sampling": "High quality"
+      },
+      "isGroup": false,
+      "isVisible": true,
+      "opacity": 1.0,
+      "blendMode": "Normal"
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000002",
+      "name": "Group",
+      "transform": {
+        "origin": [
+          0.0,
+          0.0
+        ],
+        "size": [
+          256.0,
+          256.0
+        ],
+        "rotation": 0.0,
+        "flipX": false,
+        "flipY": false,
+        "sampling": "High quality"
+      },
+      "isGroup": true,
+      "isVisible": true,
+      "opacity": 0.9,
+      "blendMode": "Normal"
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000003",
+      "name": "Inner Group",
+      "transform": {
+        "origin": [
+          0.0,
+          0.0
+        ],
+        "size": [
+          256.0,
+          256.0
+        ],
+        "rotation": 0.0,
+        "flipX": false,
+        "flipY": false,
+        "sampling": "High quality"
+      },
+      "parentID": "00000000-0000-0000-0000-000000000002",
+      "isGroup": true,
+      "isVisible": true,
+      "opacity": 0.8,
+      "blendMode": "Normal"
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000004",
+      "name": "Child A",
+      "transform": {
+        "origin": [
+          0.0,
+          0.0
+        ],
+        "size": [
+          256.0,
+          256.0
+        ],
+        "rotation": 0.0,
+        "flipX": false,
+        "flipY": false,
+        "sampling": "High quality"
+      },
+      "parentID": "00000000-0000-0000-0000-000000000003",
+      "isGroup": false,
+      "isVisible": true,
+      "opacity": 1.0,
+      "blendMode": "Normal"
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000005",
+      "name": "Child B",
+      "transform": {
+        "origin": [
+          0.0,
+          0.0
+        ],
+        "size": [
+          256.0,
+          256.0
+        ],
+        "rotation": 0.0,
+        "flipX": false,
+        "flipY": false,
+        "sampling": "High quality"
+      },
+      "parentID": "00000000-0000-0000-0000-000000000002",
+      "isGroup": false,
+      "isVisible": true,
+      "opacity": 0.6,
+      "blendMode": "Normal"
+    }
+  ]
+}

@@ -7,6 +7,16 @@ This document tracks known visual differences between the macOS original (CPU pa
 ### Resampling
 - **Lanczos-3 halving**: Minor differences at image edges due to padding strategy (original uses 8px transparent padding, port replicates but edge handling may differ by ≤1 pixel value)
 - **Bilinear final resample**: Sub-pixel differences in gradient areas (≤2 channel values)
+- **1:1 transform scaling not yet resampled**: when a layer's `transform.size` differs from
+  its asset's pixel size, the compositor currently crops/handles 1:1 rather than resampling the
+  source to the destination rectangle. `Nearest`/`Smooth`/`High quality` sampling at zoom = 1
+  is therefore not yet applied. Fixtures are authored with `asset size >= transform size` to stay
+  deterministic. (Fix planned alongside the resampler in Phase 2 follow-up / M2.)
+
+### Layer Masks
+- Mask PNG pixels are round-tripped but **not yet loaded into the render pipeline**; the
+  renderer looks up a mask asset by `maskFile` which is not populated on read. Masks are
+  preserved on save but currently render as if fully enabled. (Follow-up.)
 
 ### Blend Modes
 - **Soft Light**: Original uses CoreImage/Photoshop variant; port uses W3C formula. Difference typically ≤3 channel values in midtones. To be validated against golden references.

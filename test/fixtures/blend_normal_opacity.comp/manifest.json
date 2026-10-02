@@ -1,0 +1,56 @@
+{
+  "format": "com.compositor.project",
+  "version": 11,
+  "colorSpace": "sRGB",
+  "documentID": "00000000-0000-0000-0000-00000000049A",
+  "width": 256,
+  "height": 256,
+  "resolution": 72.0,
+  "activeLayerID": "00000000-0000-0000-0000-000000000002",
+  "layers": [
+    {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "name": "Backdrop",
+      "transform": {
+        "origin": [
+          0.0,
+          0.0
+        ],
+        "size": [
+          256.0,
+          256.0
+        ],
+        "rotation": 0.0,
+        "flipX": false,
+        "flipY": false,
+        "sampling": "High quality"
+      },
+      "isGroup": false,
+      "isVisible": true,
+      "opacity": 1.0,
+      "blendMode": "Normal"
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000002",
+      "name": "Overlay 50%",
+      "transform": {
+        "origin": [
+          0.0,
+          0.0
+        ],
+        "size": [
+          256.0,
+          256.0
+        ],
+        "rotation": 0.0,
+        "flipX": false,
+        "flipY": false,
+        "sampling": "High quality"
+      },
+      "isGroup": false,
+      "isVisible": true,
+      "opacity": 0.5,
+      "blendMode": "Normal"
+    }
+  ]
+}

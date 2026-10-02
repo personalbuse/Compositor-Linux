@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:compositor/render.dart';
 import 'package:compositor/core/model.dart';
@@ -195,6 +196,61 @@ void main() {
       
       expect(image.width, equals(1600));
       expect(image.height, equals(1200));
+    });
+
+    test('actually paints opaque layer pixels', () async {
+      final opaqueDoc = CanvasDocument(
+        id: 'opaque',
+        width: 64,
+        height: 64,
+        layers: [
+          ImageLayer(
+            id: 'LAYER1',
+            name: 'Opaque',
+            asset: ImportedImage(
+              name: 'opaque',
+              rgba: Uint8List.fromList(List<int>.generate(
+                64 * 64 * 4,
+                (i) => (i % 4 == 3) ? 255 : (i % 4 == 0 ? 255 : 200),
+              )),
+              width: 64,
+              height: 64,
+            ),
+            transform: LayerTransform(
+              originX: 0,
+              originY: 0,
+              sizeWidth: 64,
+              sizeHeight: 64,
+            ),
+            isVisible: true,
+            opacity: 1.0,
+            blendMode: BlendMode.normal,
+          ),
+        ],
+      );
+
+      final assets2 = <String, ImportedImage>{
+        'LAYER1': opaqueDoc.layers.first.asset!,
+      };
+
+      final ctx = RenderContext(
+        canvasWidth: 64,
+        canvasHeight: 64,
+        devicePixelRatio: 1.0,
+        zoom: 1.0,
+        panX: 0,
+        panY: 0,
+      );
+
+      final renderer = DocumentRenderer(document: opaqueDoc, assets: assets2);
+      final image = await renderer.renderToImage(ctx);
+      final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      expect(data, isNotNull);
+
+      final bytes = data!.buffer.asUint8List();
+      final centerIdx = (32 * 64 + 32) * 4;
+      expect(bytes[centerIdx + 3], equals(255),
+          reason: 'opaque layer must produce opaque center pixel (render regression)');
     });
   });
 }

@@ -1,0 +1,188 @@
+{
+  "format": "com.compositor.project",
+  "version": 11,
+  "colorSpace": "sRGB",
+  "documentID": "00000000-0000-0000-0000-000000000F6B",
+  "width": 256,
+  "height": 256,
+  "resolution": 72.0,
+  "activeLayerID": "00000000-0000-0000-0000-000000000010",
+  "layers": [
+    {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "name": "Backdrop",
+      "transform": {
+        "origin": [
+          0.0,
+          0.0
+        ],
+        "size": [
+          256.0,
+          256.0
+        ],
+        "rotation": 0.0,
+        "flipX": false,
+        "flipY": false,
+        "sampling": "High quality"
+      },
+      "isGroup": false,
+      "isVisible": true,
+      "opacity": 1.0,
+      "blendMode": "Normal"
+    },
+    {
+      "id": "00000000-0000-0000-0000-00000000000A",
+      "name": "Overlay",
+      "transform": {
+        "origin": [
+          0.0,
+          0.0
+        ],
+        "size": [
+          256.0,
+          36.0
+        ],
+        "rotation": 0.0,
+        "flipX": false,
+        "flipY": false,
+        "sampling": "High quality"
+      },
+      "isGroup": false,
+      "isVisible": true,
+      "opacity": 1.0,
+      "blendMode": "Overlay"
+    },
+    {
+      "id": "00000000-0000-0000-0000-00000000000B",
+      "name": "Soft Light",
+      "transform": {
+        "origin": [
+          0.0,
+          36.0
+        ],
+        "size": [
+          256.0,
+          36.0
+        ],
+        "rotation": 0.0,
+        "flipX": false,
+        "flipY": false,
+        "sampling": "High quality"
+      },
+      "isGroup": false,
+      "isVisible": true,
+      "opacity": 1.0,
+      "blendMode": "Soft Light"
+    },
+    {
+      "id": "00000000-0000-0000-0000-00000000000C",
+      "name": "Hard Light",
+      "transform": {
+        "origin": [
+          0.0,
+          72.0
+        ],
+        "size": [
+          256.0,
+          36.0
+        ],
+        "rotation": 0.0,
+        "flipX": false,
+        "flipY": false,
+        "sampling": "High quality"
+      },
+      "isGroup": false,
+      "isVisible": true,
+      "opacity": 1.0,
+      "blendMode": "Hard Light"
+    },
+    {
+      "id": "00000000-0000-0000-0000-00000000000D",
+      "name": "Vivid Light",
+      "transform": {
+        "origin": [
+          0.0,
+          108.0
+        ],
+        "size": [
+          256.0,
+          36.0
+        ],
+        "rotation": 0.0,
+        "flipX": false,
+        "flipY": false,
+        "sampling": "High quality"
+      },
+      "isGroup": false,
+      "isVisible": true,
+      "opacity": 1.0,
+      "blendMode": "Vivid Light"
+    },
+    {
+      "id": "00000000-0000-0000-0000-00000000000E",
+      "name": "Linear Light",
+      "transform": {
+        "origin": [
+          0.0,
+          144.0
+        ],
+        "size": [
+          256.0,
+          36.0
+        ],
+        "rotation": 0.0,
+        "flipX": false,
+        "flipY": false,
+        "sampling": "High quality"
+      },
+      "isGroup": false,
+      "isVisible": true,
+      "opacity": 1.0,
+      "blendMode": "Linear Light"
+    },
+    {
+      "id": "00000000-0000-0000-0000-00000000000F",
+      "name": "Pin Light",
+      "transform": {
+        "origin": [
+          0.0,
+          180.0
+        ],
+        "size": [
+          256.0,
+          36.0
+        ],
+        "rotation": 0.0,
+        "flipX": false,
+        "flipY": false,
+        "sampling": "High quality"
+      },
+      "isGroup": false,
+      "isVisible": true,
+      "opacity": 1.0,
+      "blendMode": "Pin Light"
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000010",
+      "name": "Hard Mix",
+      "transform": {
+        "origin": [
+          0.0,
+          216.0
+        ],
+        "size": [
+          256.0,
+          36.0
+        ],
+        "rotation": 0.0,
+        "flipX": false,
+        "flipY": false,
+        "sampling": "High quality"
+      },
+      "isGroup": false,
+      "isVisible": true,
+      "opacity": 1.0,
+      "blendMode": "Hard Mix"
+    }
+  ]
+}
