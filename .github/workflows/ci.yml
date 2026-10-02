@@ -30,11 +30,12 @@ jobs:
       - name: Analyze
         run: flutter analyze
       
-      - name: Run tests
-        run: flutter test
-      
+      # Build first: `flutter test` loads the native library from the bundle.
       - name: Build Linux
         run: flutter build linux --release
+      
+      - name: Run tests
+        run: flutter test
       
       - name: Run FFI smoke tests
         run: dart run tool/ffi_check.dart
@@ -63,11 +64,12 @@ jobs:
       - name: Analyze
         run: flutter analyze
       
-      - name: Run tests
-        run: flutter test
-      
+      # Build first: `flutter test` loads the native library from the bundle.
       - name: Build Windows
         run: flutter build windows --release
+      
+      - name: Run tests
+        run: flutter test
       
       - name: Run FFI smoke tests
         run: dart run tool/ffi_check.dart
